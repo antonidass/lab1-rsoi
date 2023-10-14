@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - dev
   pull_request:
     branches:
       - master
@@ -72,18 +73,6 @@ jobs:
           echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
           docker push antonidass/rsoi:latest
 
-      # - name: install ssh keys
-      #   run: |
-      #     install -m 600 -D /dev/null ~/.ssh/id_rsa
-      #     echo "${{ secrets.ID_RSA }}" > ~/.ssh/id_rsa
-      #     ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} > ~/.ssh/known_hosts
-
-      # - name: Deploy
-      #   env:
-      #     DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
-      #   run: ssh ${{ secrets.DEPLOY_USR }}@${{ secrets.DEPLOY_HOST }} "echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin && docker pull antonidass/rsoi:latest && cd /opt && docker-compose up -d --force-recreate"
-
   deploy:
     name: Deploy service on VM
     environment: Deploy
@@ -102,8 +91,19 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "docker-compose.yml"
-          target: /opt
+          target: /opt/person-service
 
+      - name: Run app on VM
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USR }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /opt/person-service
+            echo ${{ secrets.SSH_PASS }} | sudo -S docker compose rm -f
+            echo ${{ secrets.SSH_PASS }} | sudo -S docker compose up --build -d
 #      - name: Run API Tests
 #        uses: matt-ball/newman-action@master
 #        with:
