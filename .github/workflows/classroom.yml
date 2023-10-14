@@ -106,7 +106,7 @@ jobs:
           script: |
             echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
             cd /opt/person-service
-            docker compose up --build -d --force-recreate
+            docker compose up --build -d person_service
   autograding:
     name: autograding
     environment: Deploy
