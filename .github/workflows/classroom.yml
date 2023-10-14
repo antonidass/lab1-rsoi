@@ -90,7 +90,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USR }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "docker-compose.yml"
+          source: "postgres,docker-compose.yml"
           target: /opt/person-service
 
       - name: Run app on VM
